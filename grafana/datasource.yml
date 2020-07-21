@@ -1,0 +1,24 @@
+apiVersion: 1
+
+datasources:
+  - name: MySQL
+    type: mysql
+    url: mysql:3306
+    database: grafana
+    user: metrics
+    secureJsonData:
+      password: DemoPassw0rd1234
+    jsonData:
+      maxOpenConns: 0         # Grafana v5.4+
+      maxIdleConns: 2         # Grafana v5.4+
+      connMaxLifetime: 14400  # Grafana v5.4+
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    database: grafana
+    user: metrics
+    secureJsonData:
+      password: DemoPassw0rd1234
+    url: http://influxdb:8086
+    jsonData:
+      httpMode: GET

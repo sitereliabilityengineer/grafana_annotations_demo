@@ -1,0 +1,74 @@
+version: "3"
+services:
+  grafana:
+    build:
+      context: .
+      dockerfile: grafana/Dockerfile
+    container_name: grafana
+    restart: always
+    environment:
+      - "GF_PATHS_PLUGINS=/data/grafana/plugins"
+      - "GF_PATHS_PROVISIONING=/data/grafana/provisioning"
+    ports:
+      - 3000:3000
+    networks:
+      - grafana
+    volumes:
+      - grafana-volume:/var/lib/grafana
+      - grafana-plugins:/data/grafana/plugins
+      - grafana-datasources:/data/grafana/provisioning/datasources
+      - grafana-dashboards:/data/grafana/provisioning/dashboards
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      - "MYSQL_DATABASE=grafana"
+      - "MYSQL_USER=metrics"
+      - "MYSQL_USER_PASSWD=DemoPassw0rd1234"
+      - "MYSQL_USER_HOST=%"
+      - "MYSQL_PASSWORD=DemoPassw0rd1234"
+      - "MYSQL_ROOT_PASSWORD=DemoPassw0rd1234"
+      - "MYSQL_ROOT_HOST=%"
+    ports:
+      - '3306:3306'
+    networks:
+      - grafana
+    volumes:
+      - mysqlvol-01:/var/lib/mysql
+      - "./mysql/mysql_init:/docker-entrypoint-initdb.d"
+      - "./mysql/config:/etc/mysql/mysql.conf.d"
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    restart: always
+    ports:
+      - 8086:8086
+    networks:
+      - grafana
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb
+      - ./influxdb/config:/etc/influxdb
+    environment:
+        INFLUXDB_DB: "grafana"
+        INFLUXDB_ADMIN_USER: "admin"
+        INFLUXDB_ADMIN_PASSWORD: "DemoPassw0rd1234"
+        INFLUXDB_USER: "metrics"
+        INFLUXDB_USER_PASSWORD: "DemoPassw0rd1234"
+        INFLUXDB_HTTP_AUTH_ENABLED: "true"
+        INFLUXDB_DATA_DIR: "/var/lib/influxdb/data"
+        INFLUXDB_DATA_WAL_DIR: "/var/lib/influxdb/wal"
+        INFLUXDB_META_DIR: "/var/lib/influxdb/meta"
+networks:
+  grafana:
+volumes:
+  grafana-volume:
+    external: true
+  grafana-plugins:
+    external: true
+  grafana-datasources:
+    external: true
+  grafana-dashboards:
+    external: true
+  mysqlvol-01:
+    external: true
